@@ -268,10 +268,13 @@ fn main() -> opencl3::Result<()> {
 
     // Then, we ask ffmpeg to bundle it all up into a video for us
     let _ = Command::new("ffmpeg")
-        .arg(format!(
-            "-y -loglevel quiet -framerate 60 -i \"imgs/%04d.tiff\" {}",
-            cli.output.to_str().unwrap()
-        ))
+        .args([
+            "-y",
+            "-loglevel", "quiet",
+            "-framerate", "60",
+            "-i", "imgs/%04d.tiff",
+        ])
+        .arg(cli.output.to_str().unwrap())
         .stdout(Stdio::piped())
         .spawn()
         .expect("Failed to start ffmpeg");
