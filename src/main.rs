@@ -156,6 +156,9 @@ fn main() -> opencl3::Result<()> {
 
     let width: usize = cli.size;
     let height: usize = cli.size;
+    // ! If you're wondering why we add 1 here: currently, there is a bug
+    // where only the first image generated is pure white. Thus, we skip
+    // it and add an extra image to compensate
     let layers: usize = match cli.command {
         Some(Commands::Anim { fps, length }) => fps * length + 1,
         None => 2,
