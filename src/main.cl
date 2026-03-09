@@ -15,41 +15,8 @@
 cdouble f(cdouble z, double t);
 
 // remember that hue is in radians here
-// speedup by using uint8s instead of floats?
 double3 hsv2rgb(double3 hsv)
 {
-    // const double chroma = hsv[1] * hsv[2];
-    // const double h_prime = hsv[0] / M_PI_3;
-    // const double x = chroma * (1.0f - fabs(fmod(h_prime, 2) - 1.0f));
-    
-    // double3 rgb;
-    // switch((int)h_prime)
-    // {
-    //     case 0:
-    //         rgb = (double3)(chroma, x, 0);
-    //         break;
-    //     case 1:
-    //         rgb = (double3)(x, chroma, 0);
-    //         break;
-    //     case 2:
-    //         rgb = (double3)(0, chroma, x);
-    //         break;
-    //     case 3:
-    //         rgb = (double3)(0, x, chroma);
-    //         break;
-    //     case 4:
-    //         rgb = (double3)(x, 0, chroma);
-    //         break;
-    //     case 5:
-    //         rgb = (double3)(chroma, 0, x);
-    //         break;
-    //     default:
-    //         rgb = (double3)(0, 0, 0);    
-    // }
-
-    // const double m = hsv[2] - chroma;
-    // return (rgb + (double3)(m, m, m)) * 255;
-
     double3 rgb = (double3)(0, 0, 0);
     for (int i = 0; i < 3; i++) {
         double k = fmod((5 - 2*i) + hsv[0]/M_PI_3, 6);
