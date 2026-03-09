@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::ptr;
 use std::time::Instant;
+use std::env;
 
 use cl3::types::CL_NON_BLOCKING;
 use clap::*;
@@ -248,10 +249,11 @@ fn main() -> opencl3::Result<()> {
     // We begin by writing all the frames to disk
 
     // set up blank imgs dir
-    if fs::exists("imgs").unwrap() {
-        fs::remove_dir_all("imgs").expect("Failed to delete directory")
+    let imgs_dir = env::temp_dir().join("imgs");
+    if fs::exists(imgs_dir.clone()).unwrap() {
+        fs::remove_dir_all(imgs_dir.clone()).expect("Failed to delete directory")
     }
-    fs::create_dir("imgs").unwrap();
+    fs::create_dir(imgs_dir.clone()).expect("Failed to create directory");
     for i in 1..layers {
         pb.inc(1);
         let img = RgbImage::from_raw(
@@ -260,8 +262,8 @@ fn main() -> opencl3::Result<()> {
             image_data[i * (width * height * 3)..(i + 1) * (width * height * 3)].to_vec(),
         )
         .unwrap();
-        img.save_with_format(format!("./imgs/{:0>4}.tiff", i), image::ImageFormat::Tiff)
-            .expect("failed to save image");
+        img.save_with_format(imgs_dir.join(format!("{:0>4}.tiff", i)), image::ImageFormat::Tiff)
+            .expect("Failed to save image");
     }
     pb.finish_and_clear();
     println!("Done! Took {}ms", start.elapsed().as_millis());
