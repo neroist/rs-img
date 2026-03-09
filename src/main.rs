@@ -152,11 +152,11 @@ fn main() -> opencl3::Result<()> {
     let source = [CLCOMPLEX, MAIN, func.as_str()].join("\n\n");
 
     const KERNEL_NAME: &str = "colorize";
-    const OPTIONS: &str = "-cl-std=CL2.0 -DCOMPILING";
+    let options = format!("-cl-std=CL2.0 -DCOMPILING -DP_RADIUS={}", cli.radius);
 
-    let WIDTH: usize = cli.size;
-    let HEIGHT: usize = cli.size;
-    let LAYERS: usize = match cli.command {
+    let width: usize = cli.size;
+    let height: usize = cli.size;
+    let layers: usize = match cli.command {
         Some(Commands::Anim { fps, length }) => {
             fps * length + 1
         }
@@ -176,7 +176,7 @@ fn main() -> opencl3::Result<()> {
     let context = Context::from_device(&device).expect("Context::from_device failed");
 
     // Build the OpenCL program source and create the kernel.
-    let program = Program::create_and_build_from_source(&context, source.as_str(), OPTIONS)
+    let program = Program::create_and_build_from_source(&context, source.as_str(), options.as_str())
         .expect("Program::create_and_build_from_source failed");
     let kernel = Kernel::create(&program, KERNEL_NAME).expect("Kernel::create failed");
 
@@ -190,7 +190,7 @@ fn main() -> opencl3::Result<()> {
         Buffer::<cl_uchar>::create(
             &context,
             CL_MEM_READ_ONLY,
-            WIDTH * HEIGHT * LAYERS * 3,
+            width * height * layers * 3,
             ptr::null_mut(),
         )?
     };
@@ -199,14 +199,14 @@ fn main() -> opencl3::Result<()> {
     let kernel_event = unsafe {
         ExecuteKernel::new(&kernel)
             .set_arg(&buf)
-            .set_global_work_sizes(&[WIDTH, HEIGHT, LAYERS])
+            .set_global_work_sizes(&[width, height, layers])
             .enqueue_nd_range(&queue)?
     };
 
     let events = vec![kernel_event.get()];
 
     // Read the image data from the device
-    let mut image_data: Vec<u8> = vec![0; WIDTH * HEIGHT * LAYERS * 3];
+    let mut image_data: Vec<u8> = vec![0; width * height * layers * 3];
     let read_event =
         unsafe { queue.enqueue_read_buffer(&buf, CL_NON_BLOCKING, 0, &mut image_data, &events)? };
 
@@ -220,9 +220,9 @@ fn main() -> opencl3::Result<()> {
         }
 
         let img = RgbImage::from_raw(
-            WIDTH as u32,
-            HEIGHT as u32,
-            image_data[(WIDTH * HEIGHT * 3)..2 * (WIDTH * HEIGHT * 3)].to_vec(),
+            width as u32,
+            height as u32,
+            image_data[(width * height * 3)..2 * (width * height * 3)].to_vec(),
         )
         .unwrap();
         img.save(cli.output).unwrap();
@@ -231,7 +231,7 @@ fn main() -> opencl3::Result<()> {
     }
 
     // Save image to disk
-    let pb = ProgressBar::new(LAYERS as u64);
+    let pb = ProgressBar::new(layers as u64);
     pb.set_style(
         ProgressStyle::default_bar()
             .template("[{elapsed_precise}] [{wide_bar:.cyan/blue}] {pos}/{len}")
@@ -240,12 +240,12 @@ fn main() -> opencl3::Result<()> {
     );
 
     let start = Instant::now();
-    for i in 1..LAYERS {
+    for i in 1..layers {
         pb.inc(1);
         let img = RgbImage::from_raw(
-            WIDTH as u32,
-            HEIGHT as u32,
-            image_data[i * (WIDTH * HEIGHT * 3)..(i + 1) * (WIDTH * HEIGHT * 3)].to_vec(),
+            width as u32,
+            height as u32,
+            image_data[i * (width * height * 3)..(i + 1) * (width * height * 3)].to_vec(),
         )
         .unwrap();
         img.save_with_format(format!("./imgs/{:0>4}.tiff", i), image::ImageFormat::Tiff)
