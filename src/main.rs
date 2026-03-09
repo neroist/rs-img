@@ -229,7 +229,7 @@ fn main() -> opencl3::Result<()> {
             image_data[(width * height * 3)..2 * (width * height * 3)].to_vec(),
         )
         .unwrap();
-        img.save(cli.output).unwrap();
+        img.save(cli.output).expect("Failed to save image");
 
         return Ok(());
     }
