@@ -19,6 +19,7 @@ use opencl3::memory::{Buffer, CL_MEM_READ_ONLY};
 use opencl3::platform;
 use opencl3::program::Program;
 use opencl3::types::cl_uchar;
+use rayon::prelude::*;
 
 #[derive(Parser)]
 struct Cli {
@@ -251,10 +252,10 @@ fn main() -> opencl3::Result<()> {
     // set up blank imgs dir
     let imgs_dir = env::temp_dir().join("imgs");
     if fs::exists(imgs_dir.clone()).unwrap() {
-        fs::remove_dir_all(imgs_dir.clone()).expect("Failed to delete directory")
+        fs::remove_dir_all(imgs_dir.clone()).expect("Failed to delete directory");
     }
     fs::create_dir(imgs_dir.clone()).expect("Failed to create directory");
-    for i in 1..layers {
+    (1..layers).into_par_iter().for_each(|i| {
         pb.inc(1);
         let img = RgbImage::from_raw(
             width as u32,
@@ -264,14 +265,14 @@ fn main() -> opencl3::Result<()> {
         .unwrap();
         img.save_with_format(imgs_dir.clone().join(format!("{:0>4}.tiff", i)), image::ImageFormat::Tiff)
             .expect("Failed to save image");
-    }
+    });
     pb.finish_and_clear();
     println!("Done! Took {}ms", start.elapsed().as_millis());
 
     // Then, we ask ffmpeg to bundle it all up into a video for us
     // (the program will be bundled with a statically linked ffmpeg binary)
     let framerate = match cli.command {
-        Some(Commands::Anim { framerate, length }) => framerate,
+        Some(Commands::Anim { framerate, length: _ }) => framerate,
         None => 60,
     };
 
