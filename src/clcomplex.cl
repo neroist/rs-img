@@ -28,27 +28,27 @@
 #define CONCAT(x, y) x##y
 
 #define OPENCL_COMPLEX_MATH_FUNCS(complex_type, real_type, func_sufix, math_consts_sufix) \
-    complex_type CONCAT(complex, func_sufix)(real_type r, real_type i) \
+    complex_type ccomplex(real_type r, real_type i) \
     { \
         return (complex_type)(r, i); \
     } \
     \
-    real_type CONCAT(real, func_sufix)(complex_type z) \
+    real_type creal(complex_type z) \
     { \
         return z.x; \
     } \
     \
-    real_type CONCAT(re, func_sufix)(complex_type z) \
+    real_type cre(complex_type z) \
     { \
         return z.x; \
     } \
     \
-    real_type CONCAT(imag, func_sufix)(complex_type z) \
+    real_type cimag(complex_type z) \
     { \
         return z.y; \
     } \
     \
-    real_type CONCAT(im, func_sufix)(complex_type z) \
+    real_type cim(complex_type z) \
     { \
         return z.y; \
     } \
