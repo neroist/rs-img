@@ -382,7 +382,7 @@
 
 
 // double complex
-#if defined(cl_khr_fp64) || defined(CLCOMPLEX_USE_FLOAT)
+#if defined(cl_khr_fp64) && !defined(CLCOMPLEX_USE_FLOAT)
 #   pragma OPENCL EXTENSION cl_khr_fp64 : enable
     typedef double real;
     typedef double2 real2;
