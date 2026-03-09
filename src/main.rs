@@ -146,7 +146,7 @@ fn main() -> opencl3::Result<()> {
     const CLCOMPLEX: &str = include_str!("./clcomplex.cl");
     const MAIN: &str = include_str!("./main.cl");
     let func = format!(
-        "\n\ncdouble f(cdouble z, double t) {{ return {}; }}\n\n",
+        "cdouble f(cdouble z, double t) {{ return {}; }}",
         ast_to_opencl(expr).unwrap()
     );
     let source = [CLCOMPLEX, MAIN, func.as_str()].join("\n\n");
