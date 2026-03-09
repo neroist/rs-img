@@ -45,9 +45,9 @@ struct Cli {
 enum Commands {
     /// Animate a graph over time using the parametric variable t
     Anim {
-        /// Fps of the animation
+        /// Framerate of the animation
         #[arg(short, long, default_value = "60")]
-        fps: usize,
+        framerate: usize,
 
         /// Length of the animation, in seconds
         #[arg(short, long, default_value = "5")]
@@ -163,7 +163,7 @@ fn main() -> opencl3::Result<()> {
     // where only the first image generated is pure white. Thus, we skip
     // it and add an extra image to compensate
     let layers: usize = match cli.command {
-        Some(Commands::Anim { fps, length }) => fps * length + 1,
+        Some(Commands::Anim { framerate, length }) => framerate * length + 1,
         None => 2,
     };
 
@@ -270,11 +270,16 @@ fn main() -> opencl3::Result<()> {
 
     // Then, we ask ffmpeg to bundle it all up into a video for us
     // (the program will be bundled with a statically linked ffmpeg binary)
+    let framerate = match cli.command {
+        Some(Commands::Anim { framerate, length }) => framerate,
+        None => 60,
+    };
+
     let _ = Command::new("ffmpeg")
         .args([
             "-y",
             "-loglevel", "quiet",
-            "-framerate", "60",
+            "-framerate", framerate.to_string().as_str(),
             "-i", imgs_dir.join("%04d.tiff").to_str().unwrap(),
         ])
         .arg(cli.output.to_str().unwrap())
