@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::process::{Command, Stdio};
 use std::ptr;
 use std::time::Instant;
 
@@ -137,7 +138,7 @@ fn ast_to_opencl(ast: Expr) -> Result<String, EvalError> {
     };
 }
 
-#[allow(clippy::uninit_vec)]
+#[allow(clippy::zombie_processes)]
 fn main() -> opencl3::Result<()> {
     let mut cli = Cli::parse();
 
@@ -216,6 +217,7 @@ fn main() -> opencl3::Result<()> {
     read_event.wait()?;
     println!("{:?}", image_data[0..12].to_vec());
 
+    // Save image to disk
     if cli.command.is_none() {
         if cli.output.extension().is_none() {
             cli.output.add_extension("png");
@@ -232,7 +234,7 @@ fn main() -> opencl3::Result<()> {
         return Ok(());
     }
 
-    // Save image to disk
+    // Save video to disk
     let pb = ProgressBar::new(layers as u64);
     pb.set_style(
         ProgressStyle::default_bar()
@@ -242,6 +244,7 @@ fn main() -> opencl3::Result<()> {
     );
 
     let start = Instant::now();
+    // We begin by writing all the frames to disk
     for i in 1..layers {
         pb.inc(1);
         let img = RgbImage::from_raw(
@@ -255,6 +258,16 @@ fn main() -> opencl3::Result<()> {
     }
     pb.finish_and_clear();
     println!("Done! Took {}ms", start.elapsed().as_millis());
+
+    // Then, we ask ffmpeg to bundle it all up into a video for us
+    let _ = Command::new("ffmpeg")
+        .arg(format!(
+            "-y -loglevel quiet -framerate 60 -i \"imgs/%04d.tiff\" {}",
+            cli.output.to_str().unwrap()
+        ))
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("Failed to start ffmpeg");
 
     Ok(())
 }
