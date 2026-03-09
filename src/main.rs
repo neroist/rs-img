@@ -262,19 +262,20 @@ fn main() -> opencl3::Result<()> {
             image_data[i * (width * height * 3)..(i + 1) * (width * height * 3)].to_vec(),
         )
         .unwrap();
-        img.save_with_format(imgs_dir.join(format!("{:0>4}.tiff", i)), image::ImageFormat::Tiff)
+        img.save_with_format(imgs_dir.clone().join(format!("{:0>4}.tiff", i)), image::ImageFormat::Tiff)
             .expect("Failed to save image");
     }
     pb.finish_and_clear();
     println!("Done! Took {}ms", start.elapsed().as_millis());
 
     // Then, we ask ffmpeg to bundle it all up into a video for us
+    // (the program will be bundled with a statically linked ffmpeg binary)
     let _ = Command::new("ffmpeg")
         .args([
             "-y",
             "-loglevel", "quiet",
             "-framerate", "60",
-            "-i", "imgs/%04d.tiff",
+            "-i", imgs_dir.join("%04d.tiff").to_str().unwrap(),
         ])
         .arg(cli.output.to_str().unwrap())
         .stdout(Stdio::piped())
