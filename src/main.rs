@@ -5,7 +5,6 @@ use std::ptr;
 use std::time::Instant;
 use std::env;
 
-use cl3::types::CL_NON_BLOCKING;
 use clap::*;
 use image::*;
 use indicatif::*;
@@ -18,7 +17,7 @@ use opencl3::kernel::{ExecuteKernel, Kernel};
 use opencl3::memory::{Buffer, CL_MEM_READ_ONLY};
 use opencl3::platform;
 use opencl3::program::Program;
-use opencl3::types::cl_uchar;
+use opencl3::types::{cl_uchar, CL_NON_BLOCKING};
 use rayon::prelude::*;
 
 #[derive(Parser)]
