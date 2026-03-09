@@ -1,8 +1,9 @@
+use std::path::PathBuf;
 use std::ptr;
 use std::time::Instant;
-use std::path::PathBuf;
 
 use cl3::types::CL_NON_BLOCKING;
+use clap::*;
 use image::*;
 use indicatif::*;
 use itertools::Itertools;
@@ -15,7 +16,6 @@ use opencl3::memory::{Buffer, CL_MEM_READ_ONLY};
 use opencl3::platform;
 use opencl3::program::Program;
 use opencl3::types::cl_uchar;
-use clap::*;
 
 #[derive(Parser)]
 struct Cli {
@@ -30,11 +30,11 @@ struct Cli {
     output: PathBuf,
 
     /// Resolution of the resulting image/video
-    #[arg(short, long, default_value="1024")]
+    #[arg(short, long, default_value = "1024")]
     size: usize,
 
     /// Distance of the origin from the sides of the image
-    #[arg(short, long, default_value="1")]
+    #[arg(short, long, default_value = "1")]
     radius: usize,
 }
 
@@ -43,13 +43,13 @@ enum Commands {
     /// Animate a graph over time using the parametric variable t
     Anim {
         /// Fps of the animation
-        #[arg(short, long, default_value="60")]
+        #[arg(short, long, default_value = "60")]
         fps: usize,
 
         /// Length of the animation, in seconds
-        #[arg(short, long, default_value="5")]
-        length: usize
-    }
+        #[arg(short, long, default_value = "5")]
+        length: usize,
+    },
 }
 
 /// Converts math expression ast to an OpenCL C expression
@@ -157,10 +157,8 @@ fn main() -> opencl3::Result<()> {
     let width: usize = cli.size;
     let height: usize = cli.size;
     let layers: usize = match cli.command {
-        Some(Commands::Anim { fps, length }) => {
-            fps * length + 1
-        }
-        None => 2
+        Some(Commands::Anim { fps, length }) => fps * length + 1,
+        None => 2,
     };
 
     // Find a usable platform and device for this application
@@ -176,8 +174,9 @@ fn main() -> opencl3::Result<()> {
     let context = Context::from_device(&device).expect("Context::from_device failed");
 
     // Build the OpenCL program source and create the kernel.
-    let program = Program::create_and_build_from_source(&context, source.as_str(), options.as_str())
-        .expect("Program::create_and_build_from_source failed");
+    let program =
+        Program::create_and_build_from_source(&context, source.as_str(), options.as_str())
+            .expect("Program::create_and_build_from_source failed");
     let kernel = Kernel::create(&program, KERNEL_NAME).expect("Kernel::create failed");
 
     // Create a command_queue on the Context's device
@@ -227,7 +226,7 @@ fn main() -> opencl3::Result<()> {
         .unwrap();
         img.save(cli.output).unwrap();
 
-        return Ok(())
+        return Ok(());
     }
 
     // Save image to disk
