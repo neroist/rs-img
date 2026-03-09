@@ -68,10 +68,10 @@ fn ast_to_opencl(ast: Expr) -> Result<String, EvalError> {
     let binary_funcs = ["logbase", "pow", "proj"];
 
     match ast {
-        Expr::Number(val) => return Ok(format!("(cdouble)({},0)", val)),
+        Expr::Number(val) => return Ok(format!("(cmplx)({},0)", val)),
         Expr::Variable(var) => match var.to_ascii_lowercase().as_str() {
             "z" => return Ok("z".to_string()),
-            "t" => return Ok("(cdouble)(t,0)".to_string()),
+            "t" => return Ok("(cmplx)(t,0)".to_string()),
             "i" => return Ok("M_I".to_string()),
             "e" => return Ok("M_E".to_string()),
             "pi" => return Ok("M_PI".to_string()),
@@ -149,7 +149,7 @@ fn main() -> opencl3::Result<()> {
     const CLCOMPLEX: &str = include_str!("./clcomplex.cl");
     const MAIN: &str = include_str!("./main.cl");
     let func = format!(
-        "cdouble f(cdouble z, double t) {{ return {}; }}",
+        "cmplx f(cmplx z, real t) {{ return {}; }}",
         ast_to_opencl(expr).unwrap()
     );
     let source = [CLCOMPLEX, MAIN, func.as_str()].join("\n\n");
