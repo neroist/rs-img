@@ -244,7 +244,14 @@ fn main() -> opencl3::Result<()> {
     );
 
     let start = Instant::now();
+
     // We begin by writing all the frames to disk
+
+    // set up blank imgs dir
+    if fs::exists("imgs").unwrap() {
+        fs::remove_dir_all("imgs").expect("Failed to delete directory")
+    }
+    fs::create_dir("imgs").unwrap();
     for i in 1..layers {
         pb.inc(1);
         let img = RgbImage::from_raw(
