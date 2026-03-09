@@ -215,7 +215,6 @@ fn main() -> opencl3::Result<()> {
 
     // Wait for the read_event to complete.
     read_event.wait()?;
-    println!("{:?}", image_data[0..12].to_vec());
 
     // Save image to disk
     if cli.command.is_none() {
