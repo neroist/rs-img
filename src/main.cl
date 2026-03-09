@@ -57,7 +57,7 @@ kernel void colorize(global uchar* images)
     const double height = get_global_size(1);
     const double x = get_global_id(0);
     const double y = get_global_id(1);
-    const double t = get_global_id(2) / (double)(get_global_size(2));
+    const double t = (get_global_id(2) - 1) / (double)(get_global_size(2));
     const int idx = get_global_id(0) + get_global_id(1)*get_global_size(0) + get_global_id(2)*get_global_size(0)*get_global_size(1);
  
     const cdouble z = (cdouble)(
